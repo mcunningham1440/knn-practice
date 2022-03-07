@@ -104,11 +104,11 @@ def calculate_distances(point, data):
 
 print("Loading labels...")
 
-labels = np.genfromtxt('/Users/exampleuser/Desktop/pm50.csv', delimiter=',', dtype='str', usecols=1, skip_header=1)
+labels = np.genfromtxt('/Users/exampleuser/examplelocation/pm50.csv', delimiter='\t', dtype='str', usecols=1, skip_header=1)
 
-print("Labels loaded. Loading data...")
+print("Labels loaded. Loading data. This may take a few moments...")
 
-X = np.genfromtxt("/Users/exampleuser/Desktop/breast.csv", dtype='str', delimiter='\t')
+X = np.genfromtxt("/Users/exampleuser/examplelocation/breast.csv", dtype='str', delimiter='\t')
 
 # The original file for the data used to develop this program puts the different samples on the x-axis and the 
 # genes on the y; transposing it brings it into agreement with the labels file, which has the samples on the y. 
@@ -158,7 +158,7 @@ for n_pc in range(1, pc_limit + 1):
             
         predictions = np.array(predictions)
         accuracy = np.count_nonzero(labels==predictions) / n_samples
-        print("PC:", n_pc, "k:", k, "Accuracy:", round(accuracy, 3))
+        print("PC:", n_pc, "\t", "k:", k, "\t", "Accuracy:", round(accuracy, 3))
         results[n_pc - 1,k - 1] = accuracy
         
         if accuracy > best_accuracy:
