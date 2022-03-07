@@ -1,8 +1,6 @@
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
-from time import time
 
 def nearest_neighbors(labels, distances, k=5):        
     """Finds the k-nearest neighbors of a point.
@@ -106,16 +104,16 @@ def calculate_distances(point, data):
 
 print("Loading labels...")
 
-labels = np.genfromtxt("/Users/exampleuser/Desktop/pm50.csv", delimiter=',', dtype='str', usecols=1, skip_header=1)
+labels = np.genfromtxt('/Users/exampleuser/Desktop/pm50.csv', delimiter=',', dtype='str', usecols=1, skip_header=1)
 
 print("Labels loaded. Loading data...")
 
 X = np.genfromtxt("/Users/exampleuser/Desktop/breast.csv", dtype='str', delimiter='\t')
 
-# The original data file puts the different samples on the x-axis and the genes on the y; transposing it brings
-# it into agreement with the labels file, which has the samples on the y. The sample and gene names are removed 
-# prior to inputting the data into the KNN finder, but are saved to their own arrays in case they are needed. In 
-# this implementation of the program, they are not used further.
+# The original file for the data used to develop this program puts the different samples on the x-axis and the 
+# genes on the y; transposing it brings it into agreement with the labels file, which has the samples on the y. 
+# The sample and gene names are removed prior to inputting the data into the KNN finder, but are saved to their 
+# own arrays in case they are needed. In this implementation of the program, they are not used further.
 
 X = X.transpose()
 sample_names = X[1:,0]
@@ -135,6 +133,8 @@ n_samples = len(X)
 # The results array holds the accuracies for each combination of PCs and k
 
 results = np.zeros((pc_limit, k_limit))
+best_accuracy = 0
+best_pc_k = (0,0)
 
 for n_pc in range(1, pc_limit + 1):
     pca = PCA(n_components=n_pc)
@@ -160,6 +160,13 @@ for n_pc in range(1, pc_limit + 1):
         accuracy = np.count_nonzero(labels==predictions) / n_samples
         print("PC:", n_pc, "k:", k, "Accuracy:", round(accuracy, 3))
         results[n_pc - 1,k - 1] = accuracy
+        
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_pc_k = (n_pc, k)
+
+print()
+print(f"The best accuracy was {round(best_accuracy, 3)}, achieved at {best_pc_k[0]} principal components and a k of {best_pc_k[1]}")
 
 # The code below creates a heatmap of the model's accuracy, with k on the x-axis and the # of principal 
 # components on the y-axis. Subtracting 0.75 from the results before printing a heatmap and converting everything 
