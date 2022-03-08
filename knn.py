@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 
 def nearest_neighbors(labels, distances, k=5):        
     """Finds the k-nearest neighbors of a point.
@@ -10,7 +12,6 @@ def nearest_neighbors(labels, distances, k=5):
     broken by summing the distances of each label in the k-nearest and taking the label with the lowest sum. Note
     that it is not necessary to average the distances, as each label in a tie will always have the same
     frequency.
-
     Args:
         labels
             An array of point labels as strings.
@@ -104,11 +105,14 @@ def calculate_distances(point, data):
 
 print("Loading labels...")
 
-labels = np.genfromtxt('/Users/exampleuser/examplelocation/pm50.csv', delimiter='\t', dtype='str', usecols=1, skip_header=1)
+labels = np.genfromtxt('/Users/exampleuser/location/pm50.csv', delimiter='\t', dtype='str', usecols=1, skip_header=1)
 
 print("Labels loaded. Loading data. This may take a few moments...")
 
-X = np.genfromtxt("/Users/exampleuser/examplelocation/breast.csv", dtype='str', delimiter='\t')
+X = np.genfromtxt("/Users/exampleuser/location/breast.csv", dtype='str', delimiter='\t')
+
+print()
+print("Assessing model performance...")
 
 # The original file for the data used to develop this program puts the different samples on the x-axis and the 
 # genes on the y; transposing it brings it into agreement with the labels file, which has the samples on the y. 
@@ -125,16 +129,18 @@ X = np.array(X[1:,1:], dtype=np.float64)
 # to a pc_limit of 70 and a k_limit of 100 with the example breast cancer files provided, which takes roughly 5 
 # minutes to execute on my 2018 MacBook Pro.
 
-pc_limit = 10
-k_limit = 20
+pc_limit = 25
+k_limit = 40
 
 n_samples = len(X)
 
-# The results array holds the accuracies for each combination of PCs and k
+# The results array holds the weighted F1 scores for each combination of PCs and k
 
 results = np.zeros((pc_limit, k_limit))
-best_accuracy = 0
+best_performance = 0
 best_pc_k = (0,0)
+best_preds = []
+all_labels = np.unique(labels)
 
 for n_pc in range(1, pc_limit + 1):
     pca = PCA(n_components=n_pc)
@@ -157,18 +163,29 @@ for n_pc in range(1, pc_limit + 1):
             predictions.append(nearest_neighbors(labels, all_distances[i], k))
             
         predictions = np.array(predictions)
-        accuracy = np.count_nonzero(labels==predictions) / n_samples
-        print("PC:", n_pc, "\t", "k:", k, "\t", "Accuracy:", round(accuracy, 3))
-        results[n_pc - 1,k - 1] = accuracy
+        performance = f1_score(labels, predictions, labels=all_labels, average='weighted', zero_division=1)
+        print("PC:", n_pc, "\t", "k:", k, "\t", "Weighted F1:", round(performance, 3))
+        results[n_pc - 1,k - 1] = performance
         
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
+        if performance > best_performance:
+            best_performance = performance
             best_pc_k = (n_pc, k)
-
+            best_preds = predictions
+            
 print()
-print(f"The best accuracy was {round(best_accuracy, 3)}, achieved at {best_pc_k[0]} principal components and a k of {best_pc_k[1]}")
+print("===========")
+print("  RESULTS")
+print("===========")
+print()
+print(f"The best F1 score was {round(best_performance, 3)}, achieved at {best_pc_k[0]} principal components and a k of {best_pc_k[1]}")
+print()
+print("Statistical summary of best performer: ")
+print()
+all_labels = np.unique(labels)
+report = classification_report(labels, best_preds, target_names=all_labels, zero_division=1)
+print(report)
 
-# The code below creates a heatmap of the model's accuracy, with k on the x-axis and the # of principal 
+# The code below creates a heatmap of each model's weighted F1 score, with k on the x-axis and the # of principal 
 # components on the y-axis. Subtracting 0.75 from the results before printing a heatmap and converting everything 
 # negative to zero turns all the least promising areas of the space to a uniform red and accentuates the
 # differences between the rest.
@@ -177,7 +194,7 @@ results = results - 0.75
 results = np.maximum(results, 0)
 
 plt.imshow(results, cmap='autumn', interpolation='nearest')
-plt.title("Accuracy")
+plt.title("Weighted F1 score")
 plt.ylabel("# of principal components")
 plt.xlabel("k")
 plt.show()
