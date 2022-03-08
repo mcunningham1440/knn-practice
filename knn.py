@@ -61,7 +61,7 @@ def nearest_neighbors(labels, distances, k=5):
     if len(unique_labels) == 1 or unique_counts[0] > unique_counts[1]:
         return unique_labels[0]
     
-    # Makes a list of labels tied for most common, each with an integer 0 which will hold their total distances
+    # Makes a list of labels tied for most common, each with an number 0 which will hold their total distances
     
     top_labels = []
     for i in range(len(unique_counts)):
@@ -166,6 +166,8 @@ for n_pc in range(1, pc_limit + 1):
         performance = f1_score(labels, predictions, labels=all_labels, average='weighted', zero_division=1)
         print("PC:", n_pc, "\t", "k:", k, "\t", "Weighted F1:", round(performance, 3))
         results[n_pc - 1,k - 1] = performance
+        
+        # The best performing combination of PC and k is stored to be printed at the end of the run
         
         if performance > best_performance:
             best_performance = performance
