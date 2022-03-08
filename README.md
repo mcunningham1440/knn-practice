@@ -1,5 +1,5 @@
 # About
-I wrote this Python implementation of the k-nearest neighbors algorithm for multi-class classification as a way to gain experience with basic machine learning techniques. The code accepts two separate files: one containing the data points to be classified and one containing their labels, and determines the best way to reduce their dimensonality, as well as the best k value to use.
+I wrote this Python implementation of the k-nearest neighbors algorithm for multi-class classification as a way to gain experience with basic machine learning techniques. The code accepts two separate files: one containing the data points to be classified and one containing their labels, and determines the best number of principal components for reducing their dimensionality, as well as the best k value to use.
 
 # The data
 The practice data I used to build this algorithm are provided in the repository. The "breast" file contains the features--a matrix of expression levels of 19,138 different genes assessed by microarray from samples of 515 breast cancer patients. "pm50" contains the tumor subtype classifications for all of the samples. The program was written to accept files in this specific format as input, and would thus have to be slightly modified to accept different datasets.
